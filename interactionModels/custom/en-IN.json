@@ -49,6 +49,19 @@
           ]
         },
         {
+          "name": "ReprintIntent",
+          "slots": [],
+          "samples": [
+            "reprint",
+            "print it again",
+            "print that again",
+            "print the last label",
+            "reprint the last label",
+            "print another one",
+            "again"
+          ]
+        },
+        {
           "name": "StatusIntent",
           "slots": [],
           "samples": [

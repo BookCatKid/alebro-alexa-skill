@@ -286,6 +286,8 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
 
 
 def _do_print(handler_input, message):
+    session_attr = handler_input.attributes_manager.session_attributes
+    session_attr["last_printed"] = message
     response = send_print_message(message)
     if response:
         show_screen(handler_input, "✅ Sent!", f'"{message}"')
@@ -354,6 +356,34 @@ class TouchEventHandler(AbstractRequestHandler):
             return _do_retry(handler_input)
 
         return handler_input.response_builder.speak("Something went wrong.").response
+
+
+class ReprintIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return ask_utils.is_intent_name("ReprintIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        message = session_attr.get("last_printed")
+
+        if not message:
+            show_screen(handler_input, "🏷️ Label Maker", "Nothing to reprint.")
+            return (
+                handler_input.response_builder
+                    .speak("There's nothing to reprint. Say print followed by a message first.")
+                    .ask("What would you like to print?")
+                    .response
+            )
+
+        session_attr["pending_message"] = message
+        speak_output = f'Reprint: "{message}". Should I print that? Say yes or no.'
+        show_confirm_screen(handler_input, message)
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask("Say yes to print, or no to cancel.")
+                .response
+        )
 
 
 class StatusIntentHandler(AbstractRequestHandler):
@@ -438,6 +468,7 @@ sb.add_request_handler(PrintMessageIntentHandler())
 sb.add_request_handler(YesIntentHandler())
 sb.add_request_handler(NoIntentHandler())
 sb.add_request_handler(TouchEventHandler())
+sb.add_request_handler(ReprintIntentHandler())
 sb.add_request_handler(StatusIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
