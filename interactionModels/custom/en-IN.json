@@ -1,0 +1,67 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "slots": [],
+          "name": "HelloWorldIntent",
+          "samples": [
+            "hello",
+            "how are you",
+            "say hi world",
+            "say hi",
+            "hi",
+            "say hello world",
+            "say hello"
+          ]
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "slots": [
+            {
+              "name": "message",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "name": "PrintMessageIntent",
+          "samples": [
+            "send {message}",
+            "print {message}",
+            "tell label maker to print {message}"
+          ]
+        },
+        {
+          "slots": [],
+          "name": "StatusIntent",
+          "samples": [
+            "ask the label maker for it\u0027s status",
+            "ask the label maker status",
+            "printer status",
+            "status"
+          ]
+        }
+      ],
+      "types": [],
+      "invocationName": "label maker"
+    }
+  }
+}
