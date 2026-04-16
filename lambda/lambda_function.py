@@ -5,13 +5,79 @@ import ask_sdk_core.utils as ask_utils
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler, AbstractRequestHandler
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_core.skill_builder import SkillBuilder
+from ask_sdk_core.utils import get_supported_interfaces
 from ask_sdk_model import Response
+from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
 import paho.mqtt.client as mqtt
 
 from config import MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USERNAME, MQTT_PASSWORD
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+APL_SIMPLE = {
+    "type": "APL",
+    "version": "1.6",
+    "import": [{"name": "alexa-layouts", "version": "1.7.0"}],
+    "mainTemplate": {
+        "parameters": ["payload"],
+        "items": [
+            {
+                "type": "Container",
+                "width": "100vw",
+                "height": "100vh",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "items": [
+                    {
+                        "type": "Text",
+                        "text": "${payload.data.properties.title}",
+                        "fontSize": "5vh",
+                        "fontWeight": "bold",
+                        "textAlign": "center",
+                        "paddingLeft": "5vw",
+                        "paddingRight": "5vw"
+                    },
+                    {
+                        "type": "Text",
+                        "text": "${payload.data.properties.subtitle}",
+                        "fontSize": "3vh",
+                        "textAlign": "center",
+                        "opacity": 0.7,
+                        "paddingTop": "3vh",
+                        "paddingLeft": "5vw",
+                        "paddingRight": "5vw"
+                    }
+                ]
+            }
+        ]
+    }
+}
+
+
+def supports_apl(handler_input):
+    supported = get_supported_interfaces(handler_input)
+    return supported.alexa_presentation_apl is not None
+
+
+def show_screen(handler_input, title, subtitle=""):
+    if supports_apl(handler_input):
+        handler_input.response_builder.add_directive(
+            RenderDocumentDirective(
+                token="mainScreen",
+                document=APL_SIMPLE,
+                datasources={
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "title": title,
+                            "subtitle": subtitle
+                        }
+                    }
+                }
+            )
+        )
 
 
 def _mqtt_request(publish_topic, publish_payload, subscribe_topic, timeout_seconds=5):
@@ -56,6 +122,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         speak_output = "Label maker ready. You can say print followed by a message, or ask for the status."
+        show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by a message, or ask for the status.")
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -73,6 +140,7 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
         message = slots["message"].value if "message" in slots else None
 
         if not message:
+            show_screen(handler_input, "🏷️ Label Maker", "What message should I print?")
             return (
                 handler_input.response_builder
                     .speak("What message should I print?")
@@ -81,7 +149,13 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
             )
 
         response = send_print_message(message)
-        speak_output = response if response else "I sent the message, but the label maker didn't respond."
+
+        if response:
+            speak_output = response
+            show_screen(handler_input, "✅ Sent!", f'"{message}"')
+        else:
+            speak_output = "I sent the message, but the label maker didn't respond."
+            show_screen(handler_input, "⚠️ No Response", f'Sent: "{message}"')
 
         return handler_input.response_builder.speak(speak_output).response
 
@@ -92,7 +166,14 @@ class StatusIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         status = get_status_from_pi()
-        speak_output = f"The label maker is {status}." if status else "The label maker didn't respond."
+
+        if status:
+            speak_output = f"The label maker is {status}."
+            show_screen(handler_input, "🟢 Status", status.capitalize())
+        else:
+            speak_output = "The label maker didn't respond."
+            show_screen(handler_input, "🔴 Offline", "The label maker didn't respond.")
+
         return handler_input.response_builder.speak(speak_output).response
 
 
@@ -105,6 +186,7 @@ class HelpIntentHandler(AbstractRequestHandler):
             "You can ask me to print a label by saying print followed by your message. "
             "You can also ask for the label maker status."
         )
+        show_screen(handler_input, "❓ Help", "\"Print [message]\" or \"Status\"")
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -128,6 +210,7 @@ class FallbackIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         speech = "I didn't understand that. You can say print followed by a message, or ask for the status."
+        show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by a message, or ask for the status.")
         return handler_input.response_builder.speak(speech).ask("What would you like to do?").response
 
 
