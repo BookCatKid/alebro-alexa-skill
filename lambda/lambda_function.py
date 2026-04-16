@@ -2,11 +2,12 @@ import logging
 import time
 
 import ask_sdk_core.utils as ask_utils
-from ask_sdk_core.dispatch_components import AbstractExceptionHandler, AbstractRequestHandler
-from ask_sdk_core.handler_input import HandlerInput
+from ask_sdk_core.dispatch_components import (
+    AbstractExceptionHandler,
+    AbstractRequestHandler,
+)
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.utils import get_supported_interfaces
-from ask_sdk_model import Response
 from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
 import paho.mqtt.client as mqtt
 
@@ -37,7 +38,7 @@ APL_SIMPLE = {
                         "fontWeight": "bold",
                         "textAlign": "center",
                         "paddingLeft": "5vw",
-                        "paddingRight": "5vw"
+                        "paddingRight": "5vw",
                     },
                     {
                         "type": "Text",
@@ -47,12 +48,12 @@ APL_SIMPLE = {
                         "opacity": 0.7,
                         "paddingTop": "3vh",
                         "paddingLeft": "5vw",
-                        "paddingRight": "5vw"
-                    }
-                ]
+                        "paddingRight": "5vw",
+                    },
+                ],
             }
-        ]
-    }
+        ],
+    },
 }
 
 APL_CONFIRM = {
@@ -76,7 +77,7 @@ APL_CONFIRM = {
                         "fontSize": "4vh",
                         "fontWeight": "bold",
                         "textAlign": "center",
-                        "paddingBottom": "3vh"
+                        "paddingBottom": "3vh",
                     },
                     {
                         "type": "Container",
@@ -92,9 +93,9 @@ APL_CONFIRM = {
                                 "text": "${payload.data.properties.message}",
                                 "fontSize": "4vh",
                                 "textAlign": "center",
-                                "color": "#00CAFF"
+                                "color": "#00CAFF",
                             }
-                        ]
+                        ],
                     },
                     {
                         "type": "Container",
@@ -105,7 +106,7 @@ APL_CONFIRM = {
                                 "type": "TouchWrapper",
                                 "onPress": {
                                     "type": "SendEvent",
-                                    "arguments": ["retry"]
+                                    "arguments": ["retry"],
                                 },
                                 "item": {
                                     "type": "Frame",
@@ -120,20 +121,17 @@ APL_CONFIRM = {
                                             "text": "🔄 Retry",
                                             "fontSize": "3vh",
                                             "fontWeight": "bold",
-                                            "textAlign": "center"
+                                            "textAlign": "center",
                                         }
-                                    ]
-                                }
+                                    ],
+                                },
                             },
-                            {
-                                "type": "Container",
-                                "width": "5vw"
-                            },
+                            {"type": "Container", "width": "5vw"},
                             {
                                 "type": "TouchWrapper",
                                 "onPress": {
                                     "type": "SendEvent",
-                                    "arguments": ["confirm"]
+                                    "arguments": ["confirm"],
                                 },
                                 "item": {
                                     "type": "Frame",
@@ -148,17 +146,17 @@ APL_CONFIRM = {
                                             "text": "✅ Print",
                                             "fontSize": "3vh",
                                             "fontWeight": "bold",
-                                            "textAlign": "center"
+                                            "textAlign": "center",
                                         }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                ],
             }
-        ]
-    }
+        ],
+    },
 }
 
 
@@ -176,12 +174,9 @@ def show_screen(handler_input, title, subtitle=""):
                 datasources={
                     "data": {
                         "type": "object",
-                        "properties": {
-                            "title": title,
-                            "subtitle": subtitle
-                        }
+                        "properties": {"title": title, "subtitle": subtitle},
                     }
-                }
+                },
             )
         )
 
@@ -193,13 +188,8 @@ def show_confirm_screen(handler_input, message):
                 token="confirmScreen",
                 document=APL_CONFIRM,
                 datasources={
-                    "data": {
-                        "type": "object",
-                        "properties": {
-                            "message": message
-                        }
-                    }
-                }
+                    "data": {"type": "object", "properties": {"message": message}}
+                },
             )
         )
 
@@ -237,7 +227,9 @@ def get_status_from_pi():
 
 
 def send_print_message(message):
-    return _mqtt_request("simon/print", message, "simon/print/response", timeout_seconds=6)
+    return _mqtt_request(
+        "simon/print", message, "simon/print/response", timeout_seconds=6
+    )
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -246,12 +238,15 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         speak_output = "Label maker ready. You can say print followed by a message, or ask for the status."
-        show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by a message, or ask for the status.")
+        show_screen(
+            handler_input,
+            "🏷️ Label Maker",
+            'Say "print" followed by a message, or ask for the status.',
+        )
         return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask("What would you like to print?")
-                .response
+            handler_input.response_builder.speak(speak_output)
+            .ask("What would you like to print?")
+            .response
         )
 
 
@@ -266,10 +261,9 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
         if not message:
             show_screen(handler_input, "🏷️ Label Maker", "What message should I print?")
             return (
-                handler_input.response_builder
-                    .speak("What message should I print?")
-                    .ask("Tell me what to print.")
-                    .response
+                handler_input.response_builder.speak("What message should I print?")
+                .ask("Tell me what to print.")
+                .response
             )
 
         session_attr = handler_input.attributes_manager.session_attributes
@@ -278,10 +272,9 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
         speak_output = f'I heard: "{message}". Should I print that? Say yes or no.'
         show_confirm_screen(handler_input, message)
         return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask("Say yes to print, or no to try again.")
-                .response
+            handler_input.response_builder.speak(speak_output)
+            .ask("Say yes to print, or no to try again.")
+            .response
         )
 
 
@@ -295,16 +288,16 @@ def _do_print(handler_input, message):
     else:
         show_screen(handler_input, "⚠️ No Response", f'Sent: "{message}"')
         return handler_input.response_builder.speak(
-            "I sent the message, but the label maker didn't respond.").response
+            "I sent the message, but the label maker didn't respond."
+        ).response
 
 
 def _do_retry(handler_input):
-    show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by your message.")
+    show_screen(handler_input, "🏷️ Label Maker", 'Say "print" followed by your message.')
     return (
-        handler_input.response_builder
-            .speak("OK, what would you like to print?")
-            .ask("Tell me what to print.")
-            .response
+        handler_input.response_builder.speak("OK, what would you like to print?")
+        .ask("Tell me what to print.")
+        .response
     )
 
 
@@ -317,12 +310,15 @@ class YesIntentHandler(AbstractRequestHandler):
         message = session_attr.get("pending_message")
 
         if not message:
-            show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by your message.")
+            show_screen(
+                handler_input, "🏷️ Label Maker", 'Say "print" followed by your message.'
+            )
             return (
-                handler_input.response_builder
-                    .speak("There's nothing to confirm. Say print followed by a message.")
-                    .ask("What would you like to print?")
-                    .response
+                handler_input.response_builder.speak(
+                    "There's nothing to confirm. Say print followed by a message."
+                )
+                .ask("What would you like to print?")
+                .response
             )
 
         session_attr.pop("pending_message", None)
@@ -341,7 +337,9 @@ class NoIntentHandler(AbstractRequestHandler):
 
 class TouchEventHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return ask_utils.is_request_type("Alexa.Presentation.APL.UserEvent")(handler_input)
+        return ask_utils.is_request_type("Alexa.Presentation.APL.UserEvent")(
+            handler_input
+        )
 
     def handle(self, handler_input):
         args = list(handler_input.request_envelope.request.arguments)
@@ -369,20 +367,20 @@ class ReprintIntentHandler(AbstractRequestHandler):
         if not message:
             show_screen(handler_input, "🏷️ Label Maker", "Nothing to reprint.")
             return (
-                handler_input.response_builder
-                    .speak("There's nothing to reprint. Say print followed by a message first.")
-                    .ask("What would you like to print?")
-                    .response
+                handler_input.response_builder.speak(
+                    "There's nothing to reprint. Say print followed by a message first."
+                )
+                .ask("What would you like to print?")
+                .response
             )
 
         session_attr["pending_message"] = message
         speak_output = f'Reprint: "{message}". Should I print that? Say yes or no.'
         show_confirm_screen(handler_input, message)
         return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask("Say yes to print, or no to cancel.")
-                .response
+            handler_input.response_builder.speak(speak_output)
+            .ask("Say yes to print, or no to cancel.")
+            .response
         )
 
 
@@ -412,19 +410,19 @@ class HelpIntentHandler(AbstractRequestHandler):
             "You can ask me to print a label by saying print followed by your message. "
             "You can also ask for the label maker status."
         )
-        show_screen(handler_input, "❓ Help", "\"Print [message]\" or \"Status\"")
+        show_screen(handler_input, "❓ Help", '"Print [message]" or "Status"')
         return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask("What would you like to print?")
-                .response
+            handler_input.response_builder.speak(speak_output)
+            .ask("What would you like to print?")
+            .response
         )
 
 
 class CancelOrStopIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        return (ask_utils.is_intent_name("AMAZON.CancelIntent")(handler_input) or
-                ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input))
+        return ask_utils.is_intent_name("AMAZON.CancelIntent")(
+            handler_input
+        ) or ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input)
 
     def handle(self, handler_input):
         return handler_input.response_builder.speak("Goodbye!").response
@@ -436,8 +434,16 @@ class FallbackIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         speech = "I didn't understand that. You can say print followed by a message, or ask for the status."
-        show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by a message, or ask for the status.")
-        return handler_input.response_builder.speak(speech).ask("What would you like to do?").response
+        show_screen(
+            handler_input,
+            "🏷️ Label Maker",
+            'Say "print" followed by a message, or ask for the status.',
+        )
+        return (
+            handler_input.response_builder.speak(speech)
+            .ask("What would you like to do?")
+            .response
+        )
 
 
 class SessionEndedRequestHandler(AbstractRequestHandler):
@@ -455,10 +461,11 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
     def handle(self, handler_input, exception):
         logger.error(exception, exc_info=True)
         return (
-            handler_input.response_builder
-                .speak("Sorry, something went wrong. Please try again.")
-                .ask("What would you like to do?")
-                .response
+            handler_input.response_builder.speak(
+                "Sorry, something went wrong. Please try again."
+            )
+            .ask("What would you like to do?")
+            .response
         )
 
 
