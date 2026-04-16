@@ -15,19 +15,6 @@
           "samples": []
         },
         {
-          "slots": [],
-          "name": "HelloWorldIntent",
-          "samples": [
-            "hello",
-            "how are you",
-            "say hi world",
-            "say hi",
-            "hi",
-            "say hello world",
-            "say hello"
-          ]
-        },
-        {
           "name": "AMAZON.NavigateHomeIntent",
           "samples": []
         },
@@ -36,27 +23,37 @@
           "samples": []
         },
         {
+          "name": "PrintMessageIntent",
           "slots": [
             {
               "name": "message",
               "type": "AMAZON.SearchQuery"
             }
           ],
-          "name": "PrintMessageIntent",
           "samples": [
-            "send {message}",
             "print {message}",
-            "tell label maker to print {message}"
+            "print a label that says {message}",
+            "print a label {message}",
+            "print out {message}",
+            "make a label that says {message}",
+            "make a label {message}",
+            "label {message}"
           ]
         },
         {
-          "slots": [],
           "name": "StatusIntent",
+          "slots": [],
           "samples": [
-            "ask the label maker for it\u0027s status",
-            "ask the label maker status",
+            "status",
+            "what's the status",
             "printer status",
-            "status"
+            "label maker status",
+            "is the label maker on",
+            "is the printer on",
+            "is it online",
+            "check status",
+            "are you there",
+            "ask the label maker for status"
           ]
         }
       ],

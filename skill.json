@@ -39,62 +39,92 @@
       "isAvailableWorldwide": true,
       "locales": {
         "en-US": {
-          "description": "Sample Full Description",
+          "description": "Control your label maker with Alexa. Print labels and check printer status using voice commands via MQTT.",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "Alexa open label maker",
+            "print hello world",
+            "what's the status"
           ],
-          "keywords": [],
-          "name": "MQTT_LABELS",
-          "summary": "Sample Short Description"
+          "keywords": [
+            "label",
+            "printer",
+            "label maker",
+            "MQTT",
+            "IoT"
+          ],
+          "name": "Label Maker",
+          "summary": "Voice-controlled label printing via MQTT."
         },
         "en-CA": {
-          "description": "Sample Full Description",
+          "description": "Control your label maker with Alexa. Print labels and check printer status using voice commands via MQTT.",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "Alexa open label maker",
+            "print hello world",
+            "what's the status"
           ],
-          "keywords": [],
-          "name": "MQTT_LABELS",
-          "summary": "Sample Short Description"
+          "keywords": [
+            "label",
+            "printer",
+            "label maker",
+            "MQTT",
+            "IoT"
+          ],
+          "name": "Label Maker",
+          "summary": "Voice-controlled label printing via MQTT."
         },
         "en-IN": {
-          "description": "Sample Full Description",
+          "description": "Control your label maker with Alexa. Print labels and check printer status using voice commands via MQTT.",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "Alexa open label maker",
+            "print hello world",
+            "what's the status"
           ],
-          "keywords": [],
-          "name": "MQTT_LABELS",
-          "summary": "Sample Short Description"
+          "keywords": [
+            "label",
+            "printer",
+            "label maker",
+            "MQTT",
+            "IoT"
+          ],
+          "name": "Label Maker",
+          "summary": "Voice-controlled label printing via MQTT."
         },
         "en-AU": {
-          "description": "Sample Full Description",
+          "description": "Control your label maker with Alexa. Print labels and check printer status using voice commands via MQTT.",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "Alexa open label maker",
+            "print hello world",
+            "what's the status"
           ],
-          "keywords": [],
-          "name": "MQTT_LABELS",
-          "summary": "Sample Short Description"
+          "keywords": [
+            "label",
+            "printer",
+            "label maker",
+            "MQTT",
+            "IoT"
+          ],
+          "name": "Label Maker",
+          "summary": "Voice-controlled label printing via MQTT."
         },
         "en-GB": {
-          "description": "Sample Full Description",
+          "description": "Control your label maker with Alexa. Print labels and check printer status using voice commands via MQTT.",
           "examplePhrases": [
-            "Alexa open hello world",
-            "hello",
-            "help"
+            "Alexa open label maker",
+            "print hello world",
+            "what's the status"
           ],
-          "keywords": [],
-          "name": "MQTT_LABELS",
-          "summary": "Sample Short Description"
+          "keywords": [
+            "label",
+            "printer",
+            "label maker",
+            "MQTT",
+            "IoT"
+          ],
+          "name": "Label Maker",
+          "summary": "Voice-controlled label printing via MQTT."
         }
       },
-      "testingInstructions": "Sample Testing Instructions."
+      "testingInstructions": "Requires a Raspberry Pi running the label maker MQTT listener. Set MQTT environment variables on the Lambda function."
     }
   }
 }
