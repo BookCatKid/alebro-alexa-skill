@@ -55,6 +55,112 @@ APL_SIMPLE = {
     }
 }
 
+APL_CONFIRM = {
+    "type": "APL",
+    "version": "1.6",
+    "import": [{"name": "alexa-layouts", "version": "1.7.0"}],
+    "mainTemplate": {
+        "parameters": ["payload"],
+        "items": [
+            {
+                "type": "Container",
+                "width": "100vw",
+                "height": "100vh",
+                "direction": "column",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "items": [
+                    {
+                        "type": "Text",
+                        "text": "Print this label?",
+                        "fontSize": "4vh",
+                        "fontWeight": "bold",
+                        "textAlign": "center",
+                        "paddingBottom": "3vh"
+                    },
+                    {
+                        "type": "Container",
+                        "width": "80vw",
+                        "borderWidth": 2,
+                        "borderColor": "white",
+                        "borderRadius": "2vh",
+                        "padding": "4vh",
+                        "alignItems": "center",
+                        "items": [
+                            {
+                                "type": "Text",
+                                "text": "${payload.data.properties.message}",
+                                "fontSize": "4vh",
+                                "textAlign": "center",
+                                "color": "#00CAFF"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "Container",
+                        "direction": "row",
+                        "paddingTop": "5vh",
+                        "items": [
+                            {
+                                "type": "TouchWrapper",
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": ["retry"]
+                                },
+                                "item": {
+                                    "type": "Frame",
+                                    "borderRadius": "2vh",
+                                    "backgroundColor": "#DD2222",
+                                    "padding": "2vh",
+                                    "paddingLeft": "5vw",
+                                    "paddingRight": "5vw",
+                                    "items": [
+                                        {
+                                            "type": "Text",
+                                            "text": "🔄 Retry",
+                                            "fontSize": "3vh",
+                                            "fontWeight": "bold",
+                                            "textAlign": "center"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "Container",
+                                "width": "5vw"
+                            },
+                            {
+                                "type": "TouchWrapper",
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": ["confirm"]
+                                },
+                                "item": {
+                                    "type": "Frame",
+                                    "borderRadius": "2vh",
+                                    "backgroundColor": "#22AA22",
+                                    "padding": "2vh",
+                                    "paddingLeft": "5vw",
+                                    "paddingRight": "5vw",
+                                    "items": [
+                                        {
+                                            "type": "Text",
+                                            "text": "✅ Print",
+                                            "fontSize": "3vh",
+                                            "fontWeight": "bold",
+                                            "textAlign": "center"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
+
 
 def supports_apl(handler_input):
     supported = get_supported_interfaces(handler_input)
@@ -73,6 +179,24 @@ def show_screen(handler_input, title, subtitle=""):
                         "properties": {
                             "title": title,
                             "subtitle": subtitle
+                        }
+                    }
+                }
+            )
+        )
+
+
+def show_confirm_screen(handler_input, message):
+    if supports_apl(handler_input):
+        handler_input.response_builder.add_directive(
+            RenderDocumentDirective(
+                token="confirmScreen",
+                document=APL_CONFIRM,
+                datasources={
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "message": message
                         }
                     }
                 }
@@ -148,16 +272,88 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
                     .response
             )
 
-        response = send_print_message(message)
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr["pending_message"] = message
 
-        if response:
-            speak_output = response
-            show_screen(handler_input, "✅ Sent!", f'"{message}"')
-        else:
-            speak_output = "I sent the message, but the label maker didn't respond."
-            show_screen(handler_input, "⚠️ No Response", f'Sent: "{message}"')
+        speak_output = f'I heard: "{message}". Should I print that? Say yes or no.'
+        show_confirm_screen(handler_input, message)
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask("Say yes to print, or no to try again.")
+                .response
+        )
 
-        return handler_input.response_builder.speak(speak_output).response
+
+def _do_print(handler_input, message):
+    response = send_print_message(message)
+    if response:
+        show_screen(handler_input, "✅ Sent!", f'"{message}"')
+        return handler_input.response_builder.speak(response).response
+    else:
+        show_screen(handler_input, "⚠️ No Response", f'Sent: "{message}"')
+        return handler_input.response_builder.speak(
+            "I sent the message, but the label maker didn't respond.").response
+
+
+def _do_retry(handler_input):
+    show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by your message.")
+    return (
+        handler_input.response_builder
+            .speak("OK, what would you like to print?")
+            .ask("Tell me what to print.")
+            .response
+    )
+
+
+class YesIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return ask_utils.is_intent_name("AMAZON.YesIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        message = session_attr.get("pending_message")
+
+        if not message:
+            show_screen(handler_input, "🏷️ Label Maker", "Say \"print\" followed by your message.")
+            return (
+                handler_input.response_builder
+                    .speak("There's nothing to confirm. Say print followed by a message.")
+                    .ask("What would you like to print?")
+                    .response
+            )
+
+        session_attr.pop("pending_message", None)
+        return _do_print(handler_input, message)
+
+
+class NoIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return ask_utils.is_intent_name("AMAZON.NoIntent")(handler_input)
+
+    def handle(self, handler_input):
+        session_attr = handler_input.attributes_manager.session_attributes
+        session_attr.pop("pending_message", None)
+        return _do_retry(handler_input)
+
+
+class TouchEventHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return ask_utils.is_request_type("Alexa.Presentation.APL.UserEvent")(handler_input)
+
+    def handle(self, handler_input):
+        args = list(handler_input.request_envelope.request.arguments)
+        session_attr = handler_input.attributes_manager.session_attributes
+
+        if args and args[0] == "confirm":
+            message = session_attr.pop("pending_message", None)
+            if message:
+                return _do_print(handler_input, message)
+        elif args and args[0] == "retry":
+            session_attr.pop("pending_message", None)
+            return _do_retry(handler_input)
+
+        return handler_input.response_builder.speak("Something went wrong.").response
 
 
 class StatusIntentHandler(AbstractRequestHandler):
@@ -239,6 +435,9 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 sb = SkillBuilder()
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(PrintMessageIntentHandler())
+sb.add_request_handler(YesIntentHandler())
+sb.add_request_handler(NoIntentHandler())
+sb.add_request_handler(TouchEventHandler())
 sb.add_request_handler(StatusIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
