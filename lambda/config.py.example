@@ -1,0 +1,4 @@
+MQTT_BROKER_HOST = "your-broker-host.hivemq.cloud"
+MQTT_BROKER_PORT = 8883
+MQTT_USERNAME = "your-username"
+MQTT_PASSWORD = "your-password"

@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 
 import ask_sdk_core.utils as ask_utils
@@ -9,13 +8,10 @@ from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_model import Response
 import paho.mqtt.client as mqtt
 
+from config import MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USERNAME, MQTT_PASSWORD
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-MQTT_BROKER_HOST = os.environ.get("MQTT_BROKER_HOST")
-MQTT_BROKER_PORT = int(os.environ.get("MQTT_BROKER_PORT", "8883"))
-MQTT_USERNAME = os.environ.get("MQTT_USERNAME")
-MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 
 
 def _mqtt_request(publish_topic, publish_payload, subscribe_topic, timeout_seconds=5):

@@ -10,8 +10,9 @@ build/
 .venv/
 venv/
 
-# Environment
+# Environment / secrets
 .env
+lambda/config.py
 
 # IDE
 .vscode/
