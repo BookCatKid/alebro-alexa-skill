@@ -52,7 +52,7 @@
             "MQTT",
             "IoT"
           ],
-          "name": "Label Maker",
+          "name": "Alebro Label Maker",
           "summary": "Voice-controlled label printing via MQTT."
         },
         "en-CA": {
@@ -69,7 +69,7 @@
             "MQTT",
             "IoT"
           ],
-          "name": "Label Maker",
+          "name": "Alebro Label Maker",
           "summary": "Voice-controlled label printing via MQTT."
         },
         "en-IN": {
@@ -86,7 +86,7 @@
             "MQTT",
             "IoT"
           ],
-          "name": "Label Maker",
+          "name": "Alebro Label Maker",
           "summary": "Voice-controlled label printing via MQTT."
         },
         "en-AU": {
@@ -103,7 +103,7 @@
             "MQTT",
             "IoT"
           ],
-          "name": "Label Maker",
+          "name": "Alebro Label Maker",
           "summary": "Voice-controlled label printing via MQTT."
         },
         "en-GB": {
@@ -120,7 +120,7 @@
             "MQTT",
             "IoT"
           ],
-          "name": "Label Maker",
+          "name": "Alebro Label Maker",
           "summary": "Voice-controlled label printing via MQTT."
         }
       },
