@@ -11,7 +11,13 @@ from ask_sdk_core.utils import get_supported_interfaces
 from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
 import paho.mqtt.client as mqtt
 
-from config import MQTT_BROKER_HOST, MQTT_BROKER_PORT, MQTT_USERNAME, MQTT_PASSWORD
+from config import (
+    MQTT_BROKER_HOST,
+    MQTT_BROKER_PORT,
+    MQTT_USERNAME,
+    MQTT_PASSWORD,
+    WEB_UI_URL,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -119,6 +125,31 @@ APL_CONFIRM = {
                                         {
                                             "type": "Text",
                                             "text": "Aa",
+                                            "fontSize": "3vh",
+                                            "fontWeight": "bold",
+                                            "textAlign": "center",
+                                        }
+                                    ],
+                                },
+                            },
+                            {"type": "Container", "width": "3vw"},
+                            {
+                                "type": "TouchWrapper",
+                                "onPress": {
+                                    "type": "OpenURL",
+                                    "url": WEB_UI_URL,
+                                },
+                                "item": {
+                                    "type": "Frame",
+                                    "borderRadius": "2vh",
+                                    "backgroundColor": "#5555FF",
+                                    "padding": "2vh",
+                                    "paddingLeft": "3vw",
+                                    "paddingRight": "3vw",
+                                    "items": [
+                                        {
+                                            "type": "Text",
+                                            "text": "🌐 Web",
                                             "fontSize": "3vh",
                                             "fontWeight": "bold",
                                             "textAlign": "center",
@@ -451,6 +482,23 @@ class StatusIntentHandler(AbstractRequestHandler):
         return handler_input.response_builder.speak(speak_output).response
 
 
+class OpenWebIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return ask_utils.is_intent_name("OpenWebIntent")(handler_input)
+
+    def handle(self, handler_input):
+        speak_output = "Opening the Alebro web interface."
+        if supports_apl(handler_input):
+            handler_input.response_builder.add_directive(
+                {
+                    "type": "Alexa.Presentation.APL.OpenURL",
+                    "url": WEB_UI_URL,
+                    "windowId": "dialog",
+                }
+            )
+        return handler_input.response_builder.speak(speak_output).response
+
+
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("AMAZON.HelpIntent")(handler_input)
@@ -527,6 +575,7 @@ sb.add_request_handler(NoIntentHandler())
 sb.add_request_handler(TouchEventHandler())
 sb.add_request_handler(ReprintIntentHandler())
 sb.add_request_handler(StatusIntentHandler())
+sb.add_request_handler(OpenWebIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())

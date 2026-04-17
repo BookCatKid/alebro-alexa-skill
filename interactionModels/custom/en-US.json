@@ -76,6 +76,23 @@
             "are you there",
             "ask the label maker for status"
           ]
+        },
+        {
+          "name": "OpenWebIntent",
+          "slots": [],
+          "samples": [
+            "open web ui",
+            "open the web ui",
+            "open web interface",
+            "open the web interface",
+            "open menu",
+            "open the menu",
+            "show menu",
+            "show the menu",
+            "web ui",
+            "open the label maker web",
+            "open label maker web"
+          ]
         }
       ],
       "types": [],
