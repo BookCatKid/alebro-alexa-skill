@@ -6,9 +6,13 @@ from ask_sdk_core.dispatch_components import (
     AbstractExceptionHandler,
     AbstractRequestHandler,
 )
+from ask_sdk_model.interfaces.alexa.presentation.apl import (
+    RenderDocumentDirective,
+)
+from ask_sdk_model.interfaces.alexa.presentation.apl import ExecuteCommandsDirective
+from ask_sdk_model.interfaces.alexa.presentation.apl import OpenUrlCommand
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.utils import get_supported_interfaces
-from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
 import paho.mqtt.client as mqtt
 
 from config import (
@@ -187,6 +191,59 @@ APL_CONFIRM = {
                 ],
             }
         ],
+    },
+}
+
+APL_WEB = {
+    "type": "APL",
+    "version": "1.8",
+    "mainTemplate": {
+        "items": [
+            {
+                "type": "Container",
+                "width": "100vw",
+                "height": "100vh",
+                "direction": "column",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "items": [
+                    {
+                        "type": "Text",
+                        "text": "Opening website...",
+                        "fontSize": "4vh",
+                        "fontWeight": "bold",
+                        "textAlign": "center",
+                        "paddingBottom": "3vh",
+                    },
+                    {
+                        "type": "TouchWrapper",
+                        "onPress": [
+                            {
+                                "type": "OpenURL",
+                                "source": WEB_UI_URL,
+                            }
+                        ],
+                        "item": {
+                            "type": "Frame",
+                            "borderRadius": "2vh",
+                            "backgroundColor": "#0066CC",
+                            "padding": "2vh",
+                            "paddingLeft": "3vw",
+                            "paddingRight": "3vw",
+                            "items": [
+                                {
+                                    "type": "Text",
+                                    "text": "🔄 Reopen",
+                                    "fontSize": "3vh",
+                                    "fontWeight": "bold",
+                                    "textAlign": "center",
+                                }
+                            ],
+                        },
+                    }
+                ],
+            }
+        ]
     },
 }
 
@@ -462,18 +519,21 @@ class OpenWebIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("OpenWebIntent")(handler_input)
 
     def handle(self, handler_input):
-        url = "https://example.com"
+        if supports_apl(handler_input):
+            handler_input.response_builder.add_directive(
+                RenderDocumentDirective(
+                    token="alebro-web-ui",
+                    document=APL_WEB,
+                )
+            )
+            handler_input.response_builder.add_directive(
+                ExecuteCommandsDirective(
+                    token="alebro-web-ui",
+                    commands=[OpenUrlCommand(source=WEB_UI_URL)],
+                )
+            )
 
-        speak_output = "Opening the website."
-        response_builder = handler_input.response_builder.speak(speak_output)
-        if hasattr(handler_input.request_envelope.context.system.device, "supported_interfaces"):
-            response_builder.add_directive({
-                "type": "Alexa.Presentation.APL.OpenURL",
-                "source": url
-            })
-
-        return response_builder.response
-
+        return handler_input.response_builder.response
 
 class HelpIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
