@@ -462,15 +462,17 @@ class OpenWebIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("OpenWebIntent")(handler_input)
 
     def handle(self, handler_input):
-        speak_output = "Opening the Alebro web interface."
-        handler_input.response_builder.add_directive(
-            {
-                "type": "Alexa.Presentation.HTML.Start",
-                "request": {"uri": WEB_UI_URL, "method": "GET"},
-            }
-        )
+        url = "https://example.com"
 
-        return handler_input.response_builder.speak(speak_output).response
+        speak_output = "Opening the website."
+        response_builder = handler_input.response_builder.speak(speak_output)
+        if hasattr(handler_input.request_envelope.context.system.device, "supported_interfaces"):
+            response_builder.add_directive({
+                "type": "Alexa.Presentation.APL.OpenURL",
+                "source": url
+            })
+
+        return response_builder.response
 
 
 class HelpIntentHandler(AbstractRequestHandler):
