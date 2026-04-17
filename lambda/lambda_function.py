@@ -136,31 +136,6 @@ APL_CONFIRM = {
                             {
                                 "type": "TouchWrapper",
                                 "onPress": {
-                                    "type": "OpenURL",
-                                    "url": WEB_UI_URL,
-                                },
-                                "item": {
-                                    "type": "Frame",
-                                    "borderRadius": "2vh",
-                                    "backgroundColor": "#5555FF",
-                                    "padding": "2vh",
-                                    "paddingLeft": "3vw",
-                                    "paddingRight": "3vw",
-                                    "items": [
-                                        {
-                                            "type": "Text",
-                                            "text": "🌐 Web",
-                                            "fontSize": "3vh",
-                                            "fontWeight": "bold",
-                                            "textAlign": "center",
-                                        }
-                                    ],
-                                },
-                            },
-                            {"type": "Container", "width": "3vw"},
-                            {
-                                "type": "TouchWrapper",
-                                "onPress": {
                                     "type": "SendEvent",
                                     "arguments": ["retry"],
                                 },
@@ -488,14 +463,13 @@ class OpenWebIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         speak_output = "Opening the Alebro web interface."
-        if supports_apl(handler_input):
-            handler_input.response_builder.add_directive(
-                {
-                    "type": "Alexa.Presentation.APL.OpenURL",
-                    "url": WEB_UI_URL,
-                    "windowId": "dialog",
-                }
-            )
+        handler_input.response_builder.add_directive(
+            {
+                "type": "Alexa.Presentation.HTML.Start",
+                "request": {"uri": WEB_UI_URL, "method": "GET"},
+            }
+        )
+
         return handler_input.response_builder.speak(speak_output).response
 
 
