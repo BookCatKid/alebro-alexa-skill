@@ -100,8 +100,33 @@ APL_CONFIRM = {
                     {
                         "type": "Container",
                         "direction": "row",
-                        "paddingTop": "5vh",
+                        "paddingTop": "3vh",
                         "items": [
+                            {
+                                "type": "TouchWrapper",
+                                "onPress": {
+                                    "type": "SendEvent",
+                                    "arguments": ["lowercase"],
+                                },
+                                "item": {
+                                    "type": "Frame",
+                                    "borderRadius": "2vh",
+                                    "backgroundColor": "#FF8800",
+                                    "padding": "2vh",
+                                    "paddingLeft": "3vw",
+                                    "paddingRight": "3vw",
+                                    "items": [
+                                        {
+                                            "type": "Text",
+                                            "text": "Aa",
+                                            "fontSize": "3vh",
+                                            "fontWeight": "bold",
+                                            "textAlign": "center",
+                                        }
+                                    ],
+                                },
+                            },
+                            {"type": "Container", "width": "3vw"},
                             {
                                 "type": "TouchWrapper",
                                 "onPress": {
@@ -113,8 +138,8 @@ APL_CONFIRM = {
                                     "borderRadius": "2vh",
                                     "backgroundColor": "#DD2222",
                                     "padding": "2vh",
-                                    "paddingLeft": "5vw",
-                                    "paddingRight": "5vw",
+                                    "paddingLeft": "3vw",
+                                    "paddingRight": "3vw",
                                     "items": [
                                         {
                                             "type": "Text",
@@ -126,7 +151,7 @@ APL_CONFIRM = {
                                     ],
                                 },
                             },
-                            {"type": "Container", "width": "5vw"},
+                            {"type": "Container", "width": "3vw"},
                             {
                                 "type": "TouchWrapper",
                                 "onPress": {
@@ -138,8 +163,8 @@ APL_CONFIRM = {
                                     "borderRadius": "2vh",
                                     "backgroundColor": "#22AA22",
                                     "padding": "2vh",
-                                    "paddingLeft": "5vw",
-                                    "paddingRight": "5vw",
+                                    "paddingLeft": "3vw",
+                                    "paddingRight": "3vw",
                                     "items": [
                                         {
                                             "type": "Text",
@@ -266,11 +291,13 @@ class PrintMessageIntentHandler(AbstractRequestHandler):
                 .response
             )
 
+        capitalized = " ".join(word.capitalize() for word in message.split())
         session_attr = handler_input.attributes_manager.session_attributes
-        session_attr["pending_message"] = message
+        session_attr["pending_message"] = capitalized
+        session_attr["case_state"] = "title"
 
-        speak_output = f'I heard: "{message}". Should I print that? Say yes or no.'
-        show_confirm_screen(handler_input, message)
+        speak_output = f'I heard: "{capitalized}". Should I print that? Say yes or no.'
+        show_confirm_screen(handler_input, capitalized)
         return (
             handler_input.response_builder.speak(speak_output)
             .ask("Say yes to print, or no to try again.")
@@ -352,6 +379,27 @@ class TouchEventHandler(AbstractRequestHandler):
         elif args and args[0] == "retry":
             session_attr.pop("pending_message", None)
             return _do_retry(handler_input)
+        elif args and args[0] in ("lowercase", "toggle_case"):
+            message = session_attr.get("pending_message")
+            if message:
+                current_state = session_attr.get("case_state", "title")
+                if current_state == "title":
+                    case_state = "lower"
+                    new_msg = message.lower()
+                elif current_state == "lower":
+                    case_state = "upper"
+                    new_msg = message.upper()
+                else:
+                    case_state = "title"
+                    new_msg = " ".join(word.capitalize() for word in message.split())
+                session_attr["pending_message"] = new_msg
+                session_attr["case_state"] = case_state
+                show_confirm_screen(handler_input, new_msg)
+                return (
+                    handler_input.response_builder.speak(f"Switched to: {new_msg}")
+                    .ask("Say yes to print, or no to cancel.")
+                    .response
+                )
 
         return handler_input.response_builder.speak("Something went wrong.").response
 
@@ -374,9 +422,11 @@ class ReprintIntentHandler(AbstractRequestHandler):
                 .response
             )
 
-        session_attr["pending_message"] = message
-        speak_output = f'Reprint: "{message}". Should I print that? Say yes or no.'
-        show_confirm_screen(handler_input, message)
+        capitalized = " ".join(word.capitalize() for word in message.split())
+        session_attr["pending_message"] = capitalized
+        session_attr["case_state"] = "title"
+        speak_output = f'Reprint: "{capitalized}". Should I print that? Say yes or no.'
+        show_confirm_screen(handler_input, capitalized)
         return (
             handler_input.response_builder.speak(speak_output)
             .ask("Say yes to print, or no to cancel.")
