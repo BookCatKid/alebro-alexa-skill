@@ -534,9 +534,12 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 
     def handle(self, handler_input, exception):
         logger.error(exception, exc_info=True)
+
+        error_message = str(exception)
+
         return (
             handler_input.response_builder.speak(
-                "Sorry, something went wrong. Please try again."
+                f"Sorry, something went wrong. Error: {error_message}"
             )
             .ask("What would you like to do?")
             .response
